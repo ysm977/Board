@@ -1,7 +1,10 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Board {
+import util.Util;
+
+
+public class Board{
 	static ArrayList<Article> articles = new ArrayList<Article>();
 
 	public static void main(String[] args) {
@@ -10,7 +13,21 @@ public class Board {
 		String cmd = "";
 //		String store = null; // "" -> 없는 데이터, null
 
-		int id = 1;
+		int id = 4;
+		//기본으로 생성
+		Article article1 = new Article(); 
+		article1.id=1;
+		article1.title="테스트 데이터 제목1";
+		article1.body="테스트 데이터 내용1";
+		article1.regDate=Util.getCurrentDate();
+		
+		//생성자오버로딩으로 객체생성
+		Article article2 = new Article(2,"제목2","내용2",Util.getCurrentDate());
+		Article article3 = new Article(3,"제목3","내용3",Util.getCurrentDate());
+		 //게시판에 테스트데이터 추가
+		articles.add(article1);
+		articles.add(article2);
+		articles.add(article3);
 
 		while (true) {
 
@@ -36,16 +53,14 @@ public class Board {
 				System.out.println("제목을 입력해주세요");
 				String title = sc.nextLine();
 				article.title = title;
+				
+				article.regDate = Util.getCurrentDate(); //util패키지의 날짜구하기 불러오기
+					
 
 //				System.out.println("내용을 입력해주세요");
 //				String body = sc.nextLine();
 //				bodies.add(body);
 //				article.body = body;
-//				
-//				System.out.println("작성자를 입력해주세요");
-//				String writer = sc.nextLine();
-//				writers.add(writer);
-//				article.writer = writer;
 				
 				articles.add(article);
 				System.out.println("게시물이 등록되었습니다.");
@@ -55,7 +70,12 @@ public class Board {
 				System.out.println("======== 게시물 목록 ========");
 				for (int i = 0; i < articles.size(); i++) {
 					System.out.println("번호 : " + articles.get(i).id);
-					System.out.println("제목 : " + articles.get(i).title);
+					System.out.println("제목 : " + articles.get(i).title); 
+					
+					String str=articles.get(i).regDate;
+					String[]arr=str.split(" "); //공백기준으로 문자열 쪼개기
+					
+					System.out.println("작성일 : " + arr[0]);
 					// System.out.println("내용 : " + bodies.get(i) + "\n");
 				}
 			}
@@ -63,7 +83,7 @@ public class Board {
 				System.out.println("어떤 게시물을 수정하시겠습니까? : ");
 				int targetNo = Integer.parseInt(sc.nextLine());
 				Article targetArticle = get_article_by_id(targetNo);
-			
+				
 				if (targetArticle != null) {
 					
 					System.out.println("수정할 제목을 입력해주세요 : ");
@@ -111,8 +131,22 @@ public class Board {
 
 // DataClass, DTO
 class Article {
+	
 	int id;
 	String title;
 	String body;
-	String writer;
+	String regDate;
+	
+	//기본
+	Article(){
+		
+	}
+	//생성자 오버로딩
+	Article(int id, String title, String body, String regDate){
+		this.id=id;
+		this.title=title;
+		this.body=body;
+		this.regDate=regDate;
+		
+	}
 }
