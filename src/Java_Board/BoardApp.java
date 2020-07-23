@@ -8,30 +8,18 @@ import util.Util;
 public class BoardApp {
 	
 	ArrayList<Article> articles = new ArrayList<Article>();
+	ArrayList<Reply> replies = new ArrayList<Reply>();
+	int lastArticleId = 0; //게시물번호 관리용
+	int lastReplyId = 0;	//댓글 번호 관리용
 	
 	void start() {
 		Scanner sc = new Scanner(System.in);
 		String cmd = "";
-//		String store = null; // "" -> 없는 데이터, null
-
-		int id = 4;
-		//기본으로 생성
-		Article article1 = new Article(); 
-		article1.id=1;
-		article1.title="테스트 데이터 제목1";
-		article1.body="테스트 데이터 내용1";
-		article1.regDate=Util.getCurrentDate();
-		article1.hit=20;
 		
-		//생성자오버로딩으로 객체생성
-		Article article2 = new Article(2,"제목2","내용2",Util.getCurrentDate(),30);
-		Article article3 = new Article(3,"제목3","내용3",Util.getCurrentDate(),5);
-		 //게시판에 테스트데이터 추가
-		articles.add(article1);
-		articles.add(article2);
-		articles.add(article3);
+		make_Test_Data();
 
 		print_articles(articles);
+		
 		while (true) {
 
 			System.out.print("명령어를 입력해주세요 : ");
@@ -47,15 +35,14 @@ public class BoardApp {
 				System.out.println("update : 게시물 수정");
 				System.out.println("delete : 게시물 삭제");
 				System.out.println("search : 게시물 검색");
-								System.out.println("exit : 프로그램 종료");
+				System.out.println("exit : 프로그램 종료");
 			}
 
 			if (cmd.equals("add")) {
 
 				Article article = new Article();
-				article.id = id;
-				id++;
-
+				article.id = lastArticleId;
+				lastArticleId++;
 				System.out.println("제목을 입력해주세요");
 				String title = sc.nextLine();
 				article.title = title;
@@ -112,26 +99,15 @@ public class BoardApp {
 				System.out.println("검색항목을 선택해주세요: 1.제목, 2.내용");
 				int searchFlag=Integer.parseInt(sc.nextLine());
 				System.out.println("검색어를 입력해주세요");
-				String keyword = sc.nextLine();
-				
+				String keyword = sc.nextLine();				
 				ArrayList<Article> searchedArticles = new ArrayList<>();
 				
-				if(searchFlag==1) {
 					for(int i=0; i<articles.size(); i++) {
-						if(articles.get(i).title.contains(keyword)) {
+						if(articles.get(i).getPropertyByType(searchFlag).contains(keyword)) { //반복문 돌려서 입력한 키워드를 포함한 제목의 게시물을 searchedArticles에 추가
 							searchedArticles.add(articles.get(i));
 						}
 					}					
-				}
-				else if(searchFlag==2) {
-					for(int i=0; i<articles.size(); i++) {
-						if(articles.get(i).body.contains(keyword)) {
-							searchedArticles.add(articles.get(i));
-						}
-					}
-					
-				}
-				print_articles(searchedArticles);
+				print_articles(searchedArticles); //추가한게시물의 목록 조회
 			}
 			if(cmd.equals("detail")) {
 				System.out.println("게시물 번호를 입력해주세요:");
@@ -143,24 +119,88 @@ public class BoardApp {
 				}else {
 					article.hit++;
 					print_article(article);
+					
+					ArrayList<Reply> replies = get_replies_by_parent_id(articleId);
+					print_replies(replies);
+					
+					while(true) {
+						System.out.println("1.댓글, 2.좋아요, 3.수정, 4.삭제, 5.뒤로가기");
+						int detailCmd= Integer.parseInt(sc.nextLine());
+						if(detailCmd ==1) {
+							int replyId = lastReplyId;
+							lastReplyId++;
+							
+							System.out.println("댓글 내용을 입력해주세요:");
+							String replyBody=sc.nextLine();
+							String writer = "익명";
+							String regDate = Util.getCurrentDate();
+							
+							Reply new_reply = new Reply(replyId, articleId, replyBody, writer,regDate);
+							this.replies.add(new_reply);
+							System.out.println("댓글이 성공적으로 등록되었습니다");
+							
+							print_article(article);
+							ArrayList<Reply> replies2 =get_replies_by_parent_id(articleId);
+							print_replies(replies2);
+							
+							
+							
+						}else if(detailCmd ==5) {
+							break;
+						}
+						
+					}
 				}
 				
 			}
 		}
 	}
+	
+	
+	public ArrayList<Reply> get_replies_by_parent_id(int parent_id){ //부모글에 해당하는 댓글 선별
+		ArrayList<Reply> result = new ArrayList<Reply>();
+		
+		for(int i=0; i<this.replies.size(); i++) { 
+			if(this.replies.get(i).parent_id == parent_id) {
+				result.add(this.replies.get(i));
+				
+			}
+		}
+		
+		return result;
+		
+	}
+	
+	
+	
+	public void print_replies(ArrayList<Reply> replies) { //댓글리스트 받아서 출력하는 메서드
+		System.out.println("=========댓글=========");
+		for(int i=0; i <replies.size(); i++) {
+			System.out.println("내용 : "+replies.get(i).body);
+			System.out.println("작성자 : "+replies.get(i).writer);
+			System.out.println("내용 : "+replies.get(i).regDate);
+		}
+	}
+	
+	
+	
+	
 	public void print_article(Article article) { //게시물 상세보기 메소드(detail)
-		System.out.println("-------게시물 상세--------");
+		System.out.println("--------게시물 상세--------");
 		System.out.println("번호 : " + article.id);
 		System.out.println("제목 : " + article.title);
 		System.out.println("내용 : " + article.body);
 		System.out.println("조회수 : " + article.hit);
 	}
 	
+	
+	
 	public void print_articles(ArrayList<Article> articles) { //게시물 목록 조회하기 메소드 (search,list 에서 사용)
 		System.out.println("======== 게시물 목록 ========");
 		for (int i = 0; i < articles.size(); i++) {
 		System.out.println("번호 : " + articles.get(i).id);
 		System.out.println("제목 : " + articles.get(i).title); 
+		System.out.println("내용 : " + articles.get(i).body); 
 		String str=articles.get(i).regDate;
 		String[]arr=str.split(" "); //공백기준으로 문자열 쪼개기
 		System.out.println("작성일 : " + arr[0]);
@@ -169,7 +209,9 @@ public class BoardApp {
 	}
 	}
 	
-	public Article get_article_by_id(int id) {
+	
+	
+	public Article get_article_by_id(int id) { //입력받은 번호의 게시물 리턴
 		Article article = null;
 		for (int i = 0; i < articles.size(); i++) {
 			
@@ -182,6 +224,39 @@ public class BoardApp {
 		}
 		return article;
 	}
+	
+	
+	
+	public void make_Test_Data() { //테스트 데이터 메서드
+		//기본으로 생성
+				Article article1 = new Article(); 
+				article1.id=1;
+				article1.title="테스트 데이터 제목1";
+				article1.body="테스트 데이터 내용1";
+				article1.regDate=Util.getCurrentDate();
+				article1.hit=20;
+				
+				//생성자오버로딩으로 객체생성
+				Article article2 = new Article(2,"제목2","내용2",Util.getCurrentDate(),30);
+				Article article3 = new Article(3,"제목3","내용3",Util.getCurrentDate(),5);
+				 //게시판에 테스트데이터 추가
+				articles.add(article1);
+				articles.add(article2);
+				articles.add(article3);
+				
+				lastArticleId = 4;
+				
+				Reply r1 = new Reply(1, 1, "댓글1", "작성자1", Util.getCurrentDate());;
+				Reply r2 = new Reply(2, 1, "댓글2", "작성자2", Util.getCurrentDate());;
+				Reply r3 = new Reply(3, 2, "댓글3", "작성자3", Util.getCurrentDate());;
+				
+				
+				
+				replies.add(r1);
+				replies.add(r2);
+				replies.add(r3);
+	}
+	
 	
 
 

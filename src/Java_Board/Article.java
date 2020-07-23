@@ -6,7 +6,7 @@ class Article {
 	String title;
 	String body;
 	String regDate;
-	int hit;
+	int hit; //조회수
 	
 	//기본
 	Article(){
@@ -18,7 +18,19 @@ class Article {
 		this.title=title;
 		this.body=body;
 		this.regDate=regDate;
-		this.hit=hit;
+		this.hit=hit; 
 		
+	}
+	
+	String getPropertyByType(int type) {
+		String rst ="";
+		
+		if(type ==1) {
+			rst=this.title;
+		}else {
+			rst=this.body;
+			
+		}
+		return rst;
 	}
 }
