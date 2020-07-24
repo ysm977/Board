@@ -1,6 +1,7 @@
 package Java_Board;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 import util.Util;
@@ -103,7 +104,7 @@ public class BoardApp {
 				ArrayList<Article> searchedArticles = new ArrayList<>();
 				
 					for(int i=0; i<articles.size(); i++) {
-						if(articles.get(i).getPropertyByType(searchFlag).contains(keyword)) { //반복문 돌려서 입력한 키워드를 포함한 제목의 게시물을 searchedArticles에 추가
+						if(articles.get(i).getPropertyByType(searchFlag).contains(keyword)) { //getPropertyByType을 이용해 입력한숫자에따라 선택한 검색항목의 검색키워드 선별후 출력
 							searchedArticles.add(articles.get(i));
 						}
 					}					
@@ -120,8 +121,8 @@ public class BoardApp {
 					article.hit++;
 					print_article(article);
 					
-					ArrayList<Reply> replies = get_replies_by_parent_id(articleId);
-					print_replies(replies);
+					ArrayList<Reply> replies = get_replies_by_parent_id(articleId); //입력받은 번호에 해당하는 부모글의 댓글선별해서 replies에 대입
+					print_replies(replies); //댓글리스트 출력
 					
 					while(true) {
 						System.out.println("1.댓글, 2.좋아요, 3.수정, 4.삭제, 5.뒤로가기");
@@ -136,12 +137,20 @@ public class BoardApp {
 							String regDate = Util.getCurrentDate();
 							
 							Reply new_reply = new Reply(replyId, articleId, replyBody, writer,regDate);
-							this.replies.add(new_reply);
+							this.replies.add(new_reply); //댓글추가
 							System.out.println("댓글이 성공적으로 등록되었습니다");
 							
 							print_article(article);
 							ArrayList<Reply> replies2 =get_replies_by_parent_id(articleId);
 							print_replies(replies2);
+							
+							
+							
+						}else if(detailCmd ==2) {
+							System.out.println("1.좋아요 2.싫어요");
+							int likeOrHate = Integer.parseInt(sc.nextLine());
+							article.set_likes_and_hates("chacha1",likeOrHate);
+							print_article(article);
 							
 							
 							
@@ -191,6 +200,11 @@ public class BoardApp {
 		System.out.println("제목 : " + article.title);
 		System.out.println("내용 : " + article.body);
 		System.out.println("조회수 : " + article.hit);
+		
+		HashMap<String, Integer> resultMap = article.get_likes_and_hates();		
+		System.out.println("좋아요 : " + resultMap.get("like"));
+		System.out.println("싫어요 : " + resultMap.get("hate"));
+		
 	}
 	
 	
@@ -228,17 +242,32 @@ public class BoardApp {
 	
 	
 	public void make_Test_Data() { //테스트 데이터 메서드
-		//기본으로 생성
+				HashMap<String, Integer> likes1 = new HashMap<>();
+				likes1.put("chacha1", 1);
+				likes1.put("chacha2", 2);
+				likes1.put("chacha3", 1);
+				
+				HashMap<String, Integer> likes2 = new HashMap<>();
+				likes2.put("chacha1", 2);
+				likes2.put("chacha2", 2);
+				likes2.put("chacha3", 2);
+				
+				HashMap<String, Integer> likes3 = new HashMap<>();
+				likes3.put("chacha1", 1);
+				likes3.put("chacha2", 1);
+				likes3.put("chacha3", 1);
+		
 				Article article1 = new Article(); 
 				article1.id=1;
 				article1.title="테스트 데이터 제목1";
 				article1.body="테스트 데이터 내용1";
 				article1.regDate=Util.getCurrentDate();
 				article1.hit=20;
+				article1.likesAndHates = likes1;
 				
 				//생성자오버로딩으로 객체생성
-				Article article2 = new Article(2,"제목2","내용2",Util.getCurrentDate(),30);
-				Article article3 = new Article(3,"제목3","내용3",Util.getCurrentDate(),5);
+				Article article2 = new Article(2,"제목2","내용2",Util.getCurrentDate(),30,likes2);
+				Article article3 = new Article(3,"제목3","내용3",Util.getCurrentDate(),5,likes3);
 				 //게시판에 테스트데이터 추가
 				articles.add(article1);
 				articles.add(article2);
@@ -255,6 +284,8 @@ public class BoardApp {
 				replies.add(r1);
 				replies.add(r2);
 				replies.add(r3);
+				
+				lastReplyId = 4;
 	}
 	
 	
